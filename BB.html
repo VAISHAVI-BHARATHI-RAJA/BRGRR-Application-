@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Simple BRGRR</title>
+<style>
+  body { font-family: Arial, sans-serif; margin:20px; background:#f9f9f9; }
+  h1 { text-align:center; }
+  .section { margin:20px 0; padding:10px; background:#fff; border:1px solid #ccc; border-radius:8px; }
+  .choices button { margin:5px; padding:8px 12px; border:1px solid #888; border-radius:6px; cursor:pointer; }
+  .choices button.active { background:#4caf50; color:#fff; }
+  #summary { margin-top:20px; padding:10px; background:#eef; border-radius:8px; }
+</style>
+</head>
+<body>
+
+<h1>🍔 BRGRR — Build Your Burger</h1>
+
+<div class="section">
+  <h3>Choose Bun</h3>
+  <div class="choices" id="bun"></div>
+</div>
+
+<div class="section">
+  <h3>Choose Protein</h3>
+  <div class="choices" id="protein"></div>
+</div>
+
+<div class="section">
+  <h3>Toppings (toggle)</h3>
+  <div class="choices" id="toppings"></div>
+</div>
+
+<div id="summary">
+  <h3>Summary</h3>
+  <ul id="items"></ul>
+  <p><strong>Total: <span id="total">₹0</span></strong></p>
+</div>
+
+<script>
+const prices = {
+  bun: { Classic:30, Sesame:40, Brioche:50 },
+  protein: { Beef:120, Chicken:100, Veggie:80 },
+  toppings: { Lettuce:10, Tomato:12, Cheese:20, Onion:8 }
+};
+
+let state = { bun:null, protein:null, toppings:new Set() };
+
+function renderChoices(containerId, options, single=true){
+  const container = document.getElementById(containerId);
+  for(let key in options){
+    const btn = document.createElement("button");
+    btn.textContent = key+" (₹"+options[key]+")";
+    btn.onclick = ()=>{
+      if(single){
+        state[containerId]=key;
+        [...container.children].forEach(b=>b.classList.remove("active"));
+        btn.classList.add("active");
+      }else{
+        if(state.toppings.has(key)){ state.toppings.delete(key); btn.classList.remove("active"); }
+        else{ state.toppings.add(key); btn.classList.add("active"); }
+      }
+      updateSummary();
+    };
+    container.appendChild(btn);
+  }
+}
+
+function updateSummary(){
+  const items = document.getElementById("items");
+  items.innerHTML="";
+  let total=0;
+  if(state.bun){ items.innerHTML+=`<li>Bun: ${state.bun} (₹${prices.bun[state.bun]})</li>`; total+=prices.bun[state.bun]; }
+  if(state.protein){ items.innerHTML+=`<li>Protein: ${state.protein} (₹${prices.protein[state.protein]})</li>`; total+=prices.protein[state.protein]; }
+  state.toppings.forEach(t=>{
+    items.innerHTML+=`<li>Topping: ${t} (₹${prices.toppings[t]})</li>`;
+    total+=prices.toppings[t];
+  });
+  document.getElementById("total").textContent="₹"+total;
+}
+
+// init
+renderChoices("bun", prices.bun, true);
+renderChoices("protein", prices.protein, true);
+renderChoices("toppings", prices.toppings, false);
+</script>
+
+</body>
+</html>
